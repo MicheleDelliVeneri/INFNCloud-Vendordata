@@ -4,6 +4,9 @@ export CIPHERS="Ciphers aes128-ctr,aes128-gcm@openssh.com,aes192-ctr,aes256-ctr,
 export KEXALGOS="KexAlgorithms curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,diffie-hellman-group14-sha256,diffie-hellman-group14-sha1"
 export MACS="MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com"
 REDHAT_FOLDER="/etc/redhat-release"
+export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+export instance_id="`cat /var/lib/cloud/data/instance-id`"
+export LOGSERVER="vm-central-logging.internal-services.cloud.na.infn.it"
 if [ -e $REDHAT_FOLDER ]
 then
   echo "Distribution is RedHat Based"
@@ -53,5 +56,37 @@ case $LINUX_DISTRIBUTION in
   *)
        logger "$LINUX_DISTRIBUTION not managed by this script"
        echo "$LINUX_DISTRIBUTION not managed by this script"
+       ;;
+esac
+
+case $LINUX_DISTRIBUTION in
+  Ubuntu|Debian)
+       echo "\$template CloudFormat, \"%TIMESTAMP% $instance_id %syslogtag%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n\"" > /etc/rsyslog.d/99-ibiscocloud.conf
+       echo "*.* @${LOGSERVER};CloudFormat" >> /etc/rsyslog.d/99-ibiscocloud.conf
+       # Restart rsyslog if needed
+       pidof rsyslogd && service rsyslog restart
+       logger "Vendor data injected on $LINUX_DISTRIBUTION host"
+       ;;
+  Scientific)
+      # New format. Doesn't work for CentOS6
+      # echo "template(name=\"CloudFormat\" type=\"string\" string= \"%TIMESTAMP% $instance_id %syslogtag%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n\")" > /etc/rsyslog.d/99-ibiscocloud.conf
+      # Legacy (old) format
+       echo "\$template CloudFormat, \"%TIMESTAMP% $instance_id %syslogtag%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n\"" > /etc/rsyslog.d/99-ibiscocloud.conf
+       echo "*.* @${LOGSERVER};CloudFormat" >> /etc/rsyslog.d/99-ibiscocloud.conf
+       # Restart rsyslog if needed
+       pidof rsyslogd && service rsyslog restart
+       ;;
+  RedHat)
+      # New format. Doesn't work for CentOS6
+      # echo "template(name=\"CloudFormat\" type=\"string\" string= \"%TIMESTAMP% $instance_id %syslogtag%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n\")" > /etc/rsyslog.d/99-ibiscocloud.conf
+      # Legacy (old) format
+       echo "\$template CloudFormat, \"%TIMESTAMP% $instance_id %syslogtag%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n\"" > /etc/rsyslog.d/99-ibiscocloud.conf
+       echo "*.* @${LOGSERVER};CloudFormat" >> /etc/rsyslog.d/99-ibiscocloud.conf
+       # Restart rsyslog if needed
+       pidof rsyslogd && service rsyslog restart
+       logger "Vendor data injected on $LINUX_DISTRIBUTION host"
+       ;;
+  *)
+       logger "$LINUX_DISTRIBUTION not managed by this script"
        ;;
 esac
