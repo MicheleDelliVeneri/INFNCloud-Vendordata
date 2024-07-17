@@ -65,7 +65,7 @@ case $LINUX_DISTRIBUTION in
        echo "*.* @${LOGSERVER};CloudFormat" >> /etc/rsyslog.d/99-ibiscocloud.conf
        # Restart rsyslog if needed
        pidof rsyslogd && service rsyslog restart
-       echo "sudo apt update && sudo apt install wget -y"
+       sudo apt update && sudo apt install wget -y
        logger "Vendor data injected on $LINUX_DISTRIBUTION host"
        ;;
   Scientific)
@@ -75,7 +75,7 @@ case $LINUX_DISTRIBUTION in
        echo "\$template CloudFormat, \"%TIMESTAMP% $instance_id %syslogtag%%msg:::sp-if-no-1st-sp%%msg:::drop-last-lf%\n\"" > /etc/rsyslog.d/99-ibiscocloud.conf
        echo "*.* @${LOGSERVER};CloudFormat" >> /etc/rsyslog.d/99-ibiscocloud.conf
        # Restart rsyslog if needed
-       echo "yum install wget -y"
+       yum install wget -y
        pidof rsyslogd && service rsyslog restart
        ;;
   RedHat)
@@ -86,7 +86,7 @@ case $LINUX_DISTRIBUTION in
        echo "*.* @${LOGSERVER};CloudFormat" >> /etc/rsyslog.d/99-ibiscocloud.conf
        # Restart rsyslog if needed
        pidof rsyslogd && service rsyslog restart
-       echo "dnf install wget --assumeyes"
+       dnf install wget --assumeyes
        logger "Vendor data injected on $LINUX_DISTRIBUTION host"
        ;;
   *)
